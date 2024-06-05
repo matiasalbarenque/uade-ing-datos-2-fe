@@ -1,0 +1,59 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  box-sizing: border-box;
+  font-family: "Poppins", sans-serif;
+}
+
+body {
+  margin: 0;
+}
+
+.product-detail p:not(:last-child) {
+  margin-bottom: 1rem;
+}
+
+.product-detail h2 {
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+}
+
+.product-detail ul {
+  margin: 0 0 1rem;
+  padding: 0;
+  list-style-position: inside;
+}
+
+.product-detail ul, .product-detail li {
+  padding-left: 0.5rem;
+  list-style-type: disc;
+}
+
+.product-detail li {
+  word-break: break-word;
+}
+
+.product-detail .embed-responsive > iframe {
+  width: 100%;
+  aspect-ratio: 8 / 5;
+  margin-bottom: 30px;
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+
+/* @media (prefers-color-scheme: light) {
+  :root {
+    background-color: #ffffff;
+  }
+  a:hover {
+    color: #747bff;
+  }
+} */
