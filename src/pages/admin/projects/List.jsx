@@ -1,47 +1,16 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button, Modal, Table } from 'antd';
 import { DeleteFilled, EditFilled, PlusOutlined } from '@ant-design/icons';
-import { getProjects, deleteProject } from '@services/projects';
+import { useGetProjects } from '@hooks/use-projects';
+import { deleteProject } from '@services/projects';
+import { formatDate } from '@assets/scripts';
 
 export const AdminProjectsListPage = () => {
   const navigate = useNavigate();
+  const { data: projects, refetch } = useGetProjects();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [projects, setProjects] = useState([]);
   const idSelected = useRef('');
-
-  useEffect(() => {
-    getProjectsData();
-  }, []);
-
-  const getProjectsData = async () => {
-    try {
-      // const data = await getProjects();
-      const data = [
-        {
-          id: 1,
-          number_devs: 1,
-          number_tasks: 2,
-          title: 'Desarrollar UI - Home',
-        },
-        {
-          id: 2,
-          number_devs: 2,
-          number_tasks: 4,
-          title: 'Desarrollar FE - Home',
-        },
-        {
-          id: 3,
-          number_devs: 3,
-          number_tasks: 6,
-          title: 'Implementar endpoints de novedades - BE',
-        },
-      ];
-      setProjects(data);
-    } catch {
-      // TODO: Tratar el error con una alerta
-    }
-  };
 
   const newHandler = () => {
     navigate('/admin/projects/new');
@@ -59,7 +28,7 @@ export const AdminProjectsListPage = () => {
   const handleModalOk = async () => {
     await deleteProject(idSelected.current);
     closeModal();
-    getProjectsData();
+    refetch();
   };
 
   const handleModalCancel = () => {
@@ -77,17 +46,13 @@ export const AdminProjectsListPage = () => {
       dataIndex: 'title',
       key: 'title',
       width: '40%',
-      render: (text, { key }) => <Link to={`/admin/projects/${key}`}>{text}</Link>,
+      render: (value, { key }) => <Link to={`/admin/projects/${key}`}>{value}</Link>,
     },
     {
-      title: 'Cantidad de tareas',
-      dataIndex: 'number_tasks',
-      key: 'number_tasks',
-    },
-    {
-      title: 'Cantidad de recursos asignados',
-      dataIndex: 'number_devs',
-      key: 'number_devs',
+      title: 'Fecha de entrega',
+      dataIndex: 'deadline',
+      key: 'deadline',
+      render: (value, { key }) => formatDate(value),
     },
     {
       title: 'Acciones',
@@ -100,9 +65,8 @@ export const AdminProjectsListPage = () => {
 
   const tableItems = projects.map((a) => ({
     key: a.id,
-    number_devs: a.number_devs,
-    number_tasks: a.number_tasks,
     title: a.title,
+    deadline: a.deadline,
     actions: (
       <div className="flex justify-center gap-2">
         <Button type="primary" size="middle" icon={<EditFilled />} onClick={() => handleEdit(a.id)} />

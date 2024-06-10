@@ -1,37 +1,15 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button, Modal, Table } from 'antd';
 import { DeleteFilled, EditFilled, PlusOutlined } from '@ant-design/icons';
-import { getTasks, deleteTask } from '@services/tasks';
+import { useGetTasks } from '@hooks/use-tasks';
+import { deleteTask } from '@services/tasks';
 
 export const AdminTasksListPage = () => {
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [tasks, setTasks] = useState([]);
+  const { data: tasks, refetch } = useGetTasks();
   const idSelected = useRef('');
-
-  useEffect(() => {
-    getTasksData();
-  }, []);
-
-  const getTasksData = async () => {
-    try {
-      // const data = await getTasks();
-      const data = [
-        {
-          id: 1,
-          title: 'Diseñar Header de la Web',
-        },
-        {
-          id: 2,
-          title: 'Diseñar Footer de la Web',
-        },
-      ];
-      setTasks(data);
-    } catch {
-      // TODO: Tratar el error con una alerta
-    }
-  };
 
   const newHandler = () => {
     navigate('/admin/tasks/new');
@@ -49,7 +27,7 @@ export const AdminTasksListPage = () => {
   const handleModalOk = async () => {
     await deleteTask(idSelected.current);
     closeModal();
-    getTasksData();
+    refetch();
   };
 
   const handleModalCancel = () => {
@@ -66,7 +44,12 @@ export const AdminTasksListPage = () => {
       title: 'Título',
       dataIndex: 'title',
       key: 'title',
-      render: (text, { key }) => <Link to={`/admin/tasks/${key}`}>{text}</Link>,
+      render: (value, { key }) => <Link to={`/admin/tasks/${key}`}>{value}</Link>,
+    },
+    {
+      title: 'Estimación (Horas)',
+      dataIndex: 'hours',
+      key: 'hours',
     },
     {
       title: 'Acciones',
@@ -80,6 +63,7 @@ export const AdminTasksListPage = () => {
   const tableItems = tasks.map((a) => ({
     key: a.id,
     title: a.title,
+    hours: a.hours,
     actions: (
       <div className="flex justify-center gap-2">
         <Button type="primary" size="middle" icon={<EditFilled />} onClick={() => handleEdit(a.id)} />

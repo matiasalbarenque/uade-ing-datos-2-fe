@@ -16,6 +16,19 @@ export const getTasks = async () => {
   throw new Error(data);
 };
 
+export const getTask = async (id) => {
+  const response = await fetch(`${ENV.API_URL}/${entity}/${id}`, {
+    headers: {
+      Authorization: getAuthorization(),
+    },
+  });
+  const data = await response.json();
+  if (response.ok) {
+    return data;
+  }
+  throw new Error(data);
+};
+
 export const postTask = async (body) => {
   const response = await fetch(`${ENV.API_URL}/${entity}`, {
     method: 'POST',

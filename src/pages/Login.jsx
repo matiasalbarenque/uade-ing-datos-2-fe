@@ -13,69 +13,11 @@ import { useAuth } from '@hooks/use-auth';
 import { login } from '@services/auth';
 import { getUserInfo } from '@services/users';
 
-const LoginForm = (props) => {
-  const { control, handleSubmit, isFormValid, onSubmit, hasLoginError } = props;
-  const navigate = useNavigate();
-
-  const signupHandler = () => {
-    navigate('/signup');
-  };
-
-  return (
-    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
-      <Input
-        control={control}
-        id="email-id"
-        name="email"
-        label="Correo electrónico"
-        placeholder="Ingrese su email"
-        prefix={<UserOutlined />}
-        rules={{ required: true }}
-        size="large"
-        type="email"
-      />
-      <Input
-        control={control}
-        id="password-id"
-        name="password"
-        label="Contraseña"
-        type="password"
-        size="large"
-        placeholder="Ingrese su contraseña"
-        rules={{ required: true }}
-        prefix={<Icon icon="material-symbols-light:vpn-key-outline-rounded" />}
-      />
-      {hasLoginError && (
-        <Alert
-          type="error"
-          description="El usuario no existe en el sistema. Verifique los datos ingresados e intente nuevamente "
-          showIcon
-        />
-      )}
-      <div className="flex gap-4">
-        <Button shape="default" size="large" type="default" onClick={signupHandler} className="w-full !h-14">
-          Ir al registro
-        </Button>
-        <Button
-          disabled={!isFormValid}
-          htmlType="submit"
-          icon={<LoginOutlined />}
-          shape="default"
-          size="large"
-          type="primary"
-          className="w-full !h-14"
-        >
-          Ingresar
-        </Button>
-      </div>
-    </form>
-  );
-};
-
 export const LoginPage = () => {
   const navigate = useNavigate();
   const { setUser } = useAuth();
   const [hasLoginError, setHasLoginError] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const { control, formState, handleSubmit } = useForm({
     mode: 'onChange',
@@ -88,13 +30,26 @@ export const LoginPage = () => {
 
   const isFormValid = Object.keys(formState.errors).length === 0;
 
-  const onSubmit = async (formData) => {
+  const onSubmit = async () => {
+    const userData = {
+      avatarUrl: '/avatars/avatar1.jpg',
+      email: 'jperez@gmail.com',
+      firstName: 'Juliana',
+      id: 1,
+      isLogged: true,
+      lastName: 'Perez',
+      role: 1,
+    };
+    localStorage.setItem('user', JSON.stringify(userData));
+    setUser(userData);
     navigate('/admin');
-  }
+  };
 
   const onSubmit2 = async (formData) => {
     let accessToken = null;
     let userInfo = null;
+    setHasLoginError(false);
+    setIsLoading(true);
     try {
       const resp = await login(formData);
       accessToken = resp.access_token;
@@ -102,6 +57,8 @@ export const LoginPage = () => {
     } catch {
       setHasLoginError(true);
       return;
+    } finally {
+      setIsLoading(false);
     }
 
     const tokenData = jwtDecode(accessToken);
@@ -127,7 +84,7 @@ export const LoginPage = () => {
 
   return (
     <main className="w-full min-h-dvh flex justify-center items-center bg-pattern">
-      <div className="px-6 py-8 w-full max-w-sm bg-white rounded-lg border border-gray-300">
+      <div className="px-6 py-8 pb-6 w-full max-w-sm bg-white rounded-lg border border-gray-300">
         <div className="flex flex-col gap-6">
           <div className="w-full flex justify-center">
             <Link to="/">
@@ -143,9 +100,69 @@ export const LoginPage = () => {
             isFormValid={isFormValid}
             onSubmit={onSubmit}
             hasLoginError={hasLoginError}
+            isLoading={isLoading}
           />
         </div>
       </div>
     </main>
   );
-}
+};
+
+const LoginForm = (props) => {
+  const { control, handleSubmit, isFormValid, onSubmit, hasLoginError, isLoading } = props;
+  return (
+    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+      <Input
+        control={control}
+        id="email-id"
+        name="email"
+        label="Correo electrónico"
+        placeholder="Ingrese su email"
+        prefix={<UserOutlined />}
+        rules={{ required: true }}
+        size="large"
+        type="email"
+        disabled={isLoading}
+      />
+      <Input
+        control={control}
+        id="password-id"
+        name="password"
+        label="Contraseña"
+        type="password"
+        size="large"
+        placeholder="Ingrese su contraseña"
+        rules={{ required: true }}
+        prefix={<Icon icon="material-symbols-light:vpn-key-outline-rounded" />}
+        disabled={isLoading}
+      />
+      {hasLoginError && (
+        <Alert
+          type="error"
+          description="El usuario no existe en el sistema. Verifique los datos ingresados e intente nuevamente "
+          showIcon
+        />
+      )}
+      <div className="flex flex-col gap-3">
+        <Button
+          disabled={!isFormValid || isLoading}
+          htmlType="submit"
+          icon={<LoginOutlined />}
+          shape="default"
+          size="large"
+          type="primary"
+          className="w-full mt-1"
+          loading={isLoading}
+          block
+        >
+          Ingresar
+        </Button>
+        <div className="flex justify-end">
+          <Link to="/signup" className="text-sm hover:text-sky-400">
+            Olvidé mi contraseña
+          </Link>
+        </div>
+      </div>
+    </form>
+  );
+};

@@ -1,32 +1,11 @@
-import { useEffect, useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button, Divider, Dropdown } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
 import { useAuth } from '@hooks/use-auth';
 
 export const UserAvatar = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const { resetUser } = useAuth();
-
-  const userDataDefault = {
-    isLogged: false,
-  };
-
-  const [user, setUser] = useState(userDataDefault);
-
-  useEffect(() => {
-    const pathList = location.pathname.split('/');
-    if (pathList[1] === 'admin') {
-      setUser({
-        firstName: 'Juliana',
-        lastName: 'Perez',
-        email: 'jperez@gmail.com',
-        isLogged: true,
-        avatarUrl: '/avatars/avatar1.jpg',
-      });
-    }
-  }, [location.pathname]);
+  const { user, resetUser } = useAuth();
 
   const loginHandler = () => {
     navigate('/login');
@@ -51,7 +30,7 @@ export const UserAvatar = () => {
                 <span className="text-gray-400">{`${user.email}`}</span>
               </div>
               <div className="flex flex-col gap-2">
-                <Link to="/admin" className="px-3 py-1 text-center !text-gray-600 hover:bg-gray-100 rounded-sm">
+                <Link to="/admin/profile" className="px-3 py-1 text-center !text-gray-600 hover:bg-gray-100 rounded-sm">
                   Mi perfil
                 </Link>
                 <Divider className="!m-0" />

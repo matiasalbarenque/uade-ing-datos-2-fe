@@ -1,18 +1,22 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { Avatar, Button, Table, Tag } from 'antd';
 import { ClockCircleOutlined, EditOutlined, SaveOutlined } from '@ant-design/icons';
 import { Input } from '@atoms/Input';
 import { Select } from '@atoms/Select';
-import { DatePicker } from '@atoms/DatePicker';
 import { TextArea } from '@atoms/Textarea';
-import { getTasks, postTask, putTask } from '@services/tasks';
+import { useGetSkills } from '@hooks/use-skills';
+import { useGetProfiles } from '@hooks/use-profiles';
+import { getTask } from '@services/tasks';
 import { formatDate } from '@assets/scripts/helpers';
 
 export const AdminTasksEditPage = () => {
   const navigate = useNavigate();
   const params = useParams();
+  const { data: skills, isLoading: isLoadingSkills } = useGetSkills();
+  const { data: profiles, isLoading: isLoadingProfiles } = useGetProfiles();
+  const [tableItems, setTableItems] = useState([]);
 
   const { control, formState, handleSubmit, reset, watch } = useForm({
     mode: 'onChange',
@@ -21,8 +25,8 @@ export const AdminTasksEditPage = () => {
       title: '',
       hours: 1,
       description: '',
-      deadline: null,
       employee_ids: [],
+      skills_ids: [],
     },
     shouldUnregister: true,
   });
@@ -31,81 +35,27 @@ export const AdminTasksEditPage = () => {
 
   useEffect(() => {
     if (params.id !== 'new') {
-      getTasksData();
+      getTaskData();
     }
   }, []);
 
-  const getTasksData = async () => {
+  const getTaskData = async () => {
     try {
-      const data = await getTasks(params.id);
+      const data = await getTask(params.id);
       if (data) {
         reset({
           id: data.id,
           title: data.title,
+          hours: data.hours,
           description: data.description,
+          employee_ids: data.employee_ids,
+          skills_ids: data.skills_ids,
         });
       }
     } catch {
       // TODO: Tratar el error con una alerta
     }
   };
-
-  const onSubmit = async ({ id, ...formData }) => {
-    const submitData = {
-      id,
-      ...formData,
-      deadline: formatDate(new Date(formData.deadline), 'yyyy-MM-dd'),
-    };
-    console.log(submitData);
-    // try {
-    //   if (params.id === 'new') {
-    //     postTask(formData);
-    //   } else {
-    //     putTask({ id, ...formData });
-    //   }
-    //   navigate('/admin/tasks');
-    // } catch {
-    //   // TODO: tratar el error de guardado
-    // }
-  };
-
-  const profiles = [
-    {
-      id: 1,
-      name: 'Web Developer',
-    },
-    {
-      id: 2,
-      name: 'UX Developer',
-    },
-    {
-      id: 3,
-      name: 'UI Developer',
-    },
-    {
-      id: 4,
-      name: 'Backend Developer',
-    },
-  ];
-
-  const skills = [
-    {
-      id: 1,
-      name: 'Python',
-    },
-    {
-      id: 2,
-      name: 'HTML',
-    },
-    {
-      id: 3,
-      name: 'Javascript',
-    },
-    {
-      id: 4,
-      name: 'NodeJs',
-    },
-  ];
 
   const employees = [
     {
@@ -142,6 +92,26 @@ export const AdminTasksEditPage = () => {
     },
   ];
 
+  useEffect(() => {
+    if (!isLoadingSkills && !isLoadingProfiles && Array.isArray(watch('employee_ids'))) {
+      const items = employees
+        .filter((a) => watch('employee_ids').includes(a.id))
+        .map((b) => ({
+          ...b,
+          profile: profiles.find((a) => a.id === b.id).name,
+          skills: skills
+            .filter((c) => b.skills_id.includes(c.id))
+            .map((d) => (
+              <Tag key={d.id} color="blue">
+                {d.name}
+              </Tag>
+            )),
+          key: b.id,
+        }));
+      setTableItems(items);
+    }
+  }, [isLoadingSkills, isLoadingProfiles, watch('employee_ids')]);
+
   const columns = [
     {
       dataIndex: 'avatar_url',
@@ -174,16 +144,24 @@ export const AdminTasksEditPage = () => {
     },
   ];
 
-  const tableItems = employees
-    .filter((a) => watch('employee_ids').includes(a.id))
-    .map((b) => ({
-      ...b,
-      profile: profiles.find((a) => a.id === b.id).name,
-      skills: skills
-        .filter((c) => b.skills_id.includes(c.id))
-        .map((d) => <Tag key={d.id} color="blue">{d.name}</Tag>),
-      key: b.id,
-    }));
+  const onSubmit = async ({ id, ...formData }) => {
+    const submitData = {
+      id,
+      ...formData,
+      deadline: formatDate(new Date(formData.deadline), 'yyyy-MM-dd'),
+    };
+    console.log(submitData);
+    // try {
+    //   if (params.id === 'new') {
+    //     postTask(formData);
+    //   } else {
+    //     putTask({ id, ...formData });
+    //   }
+    //   navigate('/admin/tasks');
+    // } catch {
+    //   // TODO: tratar el error de guardado
+    // }
+  };
 
   return (
     <div>
@@ -220,18 +198,6 @@ export const AdminTasksEditPage = () => {
                 min={1}
               />
             </div>
-            <div>
-              <DatePicker
-                control={control}
-                id="deadline-date-id"
-                name="deadline"
-                label="Fecha de Deadline"
-                placeholder="Seleccione la fecha..."
-                rules={{ required: true }}
-                size="large"
-                format={(a) => formatDate(a)}
-              />
-            </div>
           </div>
         </div>
         <div>
@@ -245,29 +211,49 @@ export const AdminTasksEditPage = () => {
             size="large"
           />
         </div>
-        <div>
-          <Select
-            control={control}
-            mode="multiple"
-            showSearch={false}
-            id="employee-ids"
-            name="employee_ids"
-            label="Asignación de empleados:"
-            size="large"
-            placeholder="Seleccionar empleado"
-            rules={{ required: true }}
-            className="w-full"
-            options={employees.map((a) => ({ value: a.id, label: <span>{`${a.firstname} ${a.lastname}`}</span> }))}
-          />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          <div>
+            <Select
+              control={control}
+              mode="multiple"
+              showSearch={false}
+              id="skills-ids"
+              name="skills_ids"
+              label="Habilidades requeridas:"
+              size="large"
+              placeholder="Seleccionar habilidad"
+              rules={{ required: true }}
+              className="w-full"
+              options={skills.map((a) => ({ value: a.id, label: a.name }))}
+            />
+          </div>
+          <div>
+            <Select
+              control={control}
+              mode="multiple"
+              showSearch={false}
+              id="employee-ids"
+              name="employee_ids"
+              label="Asignación de empleados:"
+              size="large"
+              placeholder="Seleccionar empleado"
+              rules={{ required: true }}
+              className="w-full"
+              options={employees.map((a) => ({ value: a.id, label: <span>{`${a.firstname} ${a.lastname}`}</span> }))}
+              disabled={watch('skills_ids')?.length === 0}
+            />
+          </div>
         </div>
-        <div>
-          <Table
-            columns={columns}
-            dataSource={tableItems}
-            pagination={false}
-            className="border border-[#ddd] rounded-md bg-white"
-          />
-        </div>
+        {watch('employee_ids')?.length > 0 && (
+          <div>
+            <Table
+              columns={columns}
+              dataSource={tableItems}
+              pagination={false}
+              className="border border-[#ddd] rounded-md bg-white"
+            />
+          </div>
+        )}
         <div className="mt-4">
           <Button icon={<SaveOutlined />} htmlType="submit" size="large" type="primary" disabled={!isFormValid}>
             {params.id === 'new' ? 'Crear' : 'Guardar'}
