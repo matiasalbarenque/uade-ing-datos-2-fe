@@ -1,0 +1,156 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "firstName": "Marta",
+      "lastName": "Perez",
+      "email": "admin@gmail.com",
+      "password": "abc123",
+      "avatarImg": "/avatars/avatar1.jpg",
+      "roles_id": 1
+    },
+    {
+      "id": 2,
+      "firstName": "Juana",
+      "lastName": "Rodriguez",
+      "email": "pm@gmail.com",
+      "password": "abc123",
+      "avatarImg": "/avatars/avatar2.jpg",
+      "roles_id": 2
+    },
+    {
+      "id": 3,
+      "firstName": "Alberto",
+      "lastName": "Bosa",
+      "email": "dev@gmail.com",
+      "password": "abc123",
+      "avatarImg": "/avatars/avatar4.jpg",
+      "roles_id": 3
+    }
+  ],
+  "roles": [
+    {
+      "id": 1,
+      "name": "admin"
+    },
+    {
+      "id": 2,
+      "name": "pm"
+    },
+    {
+      "id": 3,
+      "name": "dev"
+    }
+  ],
+  "projects": [
+    {
+      "id": 1,
+      "title": "Desarrollar UI - Home",
+      "description": "Lorem Ipsum is simply dummy text of the printing and typesetting industry.",
+      "deadline": "2024-06-28",
+      "tasks_ids": []
+    },
+    {
+      "id": 2,
+      "title": "Desarrollar FE - Home",
+      "description": "It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters.",
+      "deadline": "2024-06-30",
+      "tasks_ids": []
+    },
+    {
+      "id": 3,
+      "title": "Implementar endpoints de novedades - BE",
+      "description": "Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC, making it over 2000 years old. Richard McClintock.",
+      "deadline": "2024-06-29",
+      "tasks_ids": []
+    }
+  ],
+  "tasks": [
+    {
+      "id": 1,
+      "title": "Diseñar Header de la Web",
+      "description": "",
+      "hours": 2,
+      "status_id": 1,
+      "employee_ids": [],
+      "skills_ids": []
+    },
+    {
+      "id": 2,
+      "title": "Diseñar Footer de la Web",
+      "description": "",
+      "hours": 1,
+      "status_id": 2,
+      "employee_ids": [],
+      "skills_ids": []
+    },
+    {
+      "id": 3,
+      "title": "Implementar pantalla principal",
+      "description": "",
+      "hours": 3,
+      "status_id": 3,
+      "employee_ids": [],
+      "skills_ids": []
+    },
+    {
+      "id": 4,
+      "title": "Implementar input de búsqueda en el header",
+      "description": "",
+      "hours": 2,
+      "status_id": 3,
+      "employee_ids": [],
+      "skills_ids": []
+    }
+  ],
+  "skills": [
+    {
+      "id": 1,
+      "name": "Python"
+    },
+    {
+      "id": 2,
+      "name": "HTML"
+    },
+    {
+      "id": 3,
+      "name": "Javascript"
+    },
+    {
+      "id": 4,
+      "name": "NodeJs"
+    }
+  ],
+  "profiles": [
+    {
+      "id": 1,
+      "name": "Web Developer"
+    },
+    {
+      "id": 2,
+      "name": "UX Developer"
+    },
+    {
+      "id": 3,
+      "name": "UI Developer"
+    },
+    {
+      "id": 4,
+      "name": "Backend Developer"
+    }
+  ],
+  "status": [
+    {
+      "id": 1,
+      "name": "Ready for dev"
+    },
+    {
+      "id": 2,
+      "name": "In progress"
+    },
+    {
+      "id": 3,
+      "name": "Done"
+    }
+  ]
+}

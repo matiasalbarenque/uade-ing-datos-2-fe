@@ -1,22 +1,35 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-import { Button } from 'antd';
+import { Button, Table, Tag } from 'antd';
 import { EditOutlined, SaveOutlined } from '@ant-design/icons';
 import { Input } from '@atoms/Input';
+import { Select } from '@atoms/Select';
+import { DatePicker } from '@atoms/DatePicker';
 import { TextArea } from '@atoms/Textarea';
-import { getProduct, postProject, putProject } from '@services/projects';
+import { ProgressBar } from '@atoms/ProgressBar';
+import { getProject, postProject, putProject } from '@services/projects';
+import { useGetTasks } from '@hooks/use-tasks';
+import { useGetStatus } from '@hooks/use-status';
+import { formatDate } from '@assets/scripts/helpers';
+import { STATUS } from '@assets/constants';
 
 export const AdminProjectsEditPage = () => {
   const navigate = useNavigate();
   const params = useParams();
+  const { data: tasks, isLoading: isLoadingTasks } = useGetTasks();
+  const { data: statusList, isLoading: isLoadingStatus } = useGetStatus();
+  const [tableItems, setTableItems] = useState([]);
+  const [progress, setProgress] = useState(0);
 
-  const { control, formState, handleSubmit, reset } = useForm({
+  const { control, formState, handleSubmit, reset, watch } = useForm({
     mode: 'onChange',
     defaultValues: {
       id: null,
+      deadline: null,
       title: '',
       description: '',
+      tasks_ids: [],
     },
     shouldUnregister: true,
   });
@@ -31,7 +44,7 @@ export const AdminProjectsEditPage = () => {
 
   const getProjectData = async () => {
     try {
-      const data = await getProduct(params.id);
+      const data = await getProject(params.id);
       if (data) {
         reset({
           id: data.id,
@@ -39,12 +52,44 @@ export const AdminProjectsEditPage = () => {
           number_tasks: data.number_tasks,
           title: data.title,
           description: data.description,
+          tasks_ids: data.tasks_ids,
         });
       }
     } catch {
       // TODO: Tratar el error con una alerta
     }
   };
+
+  const getStatus = (id) => {
+    const name = statusList.find((a) => a.id === id).name;
+    let taskStatus = 'default';
+    if (id === STATUS.IN_PROGRESS) {
+      taskStatus = 'blue';
+    } else if (id === STATUS.DONE) {
+      taskStatus = 'success';
+    }
+    return (
+      <Tag key={`tag-${id}`} color={taskStatus}>
+        {name}
+      </Tag>
+    );
+  };
+
+  useEffect(() => {
+    if (!isLoadingTasks && !isLoadingStatus && Array.isArray(watch('tasks_ids'))) {
+      const items = tasks
+        .filter((a) => watch('tasks_ids').includes(a.id))
+        .map((b) => ({
+          ...b,
+          status: getStatus(b.status_id),
+          key: b.id,
+        }));
+      setTableItems(items);
+      // Calculo del progreso
+      const progressCalc = (items.filter((a) => a.status_id === STATUS.DONE).length * 100) / items.length;
+      setProgress(Number.parseInt(progressCalc));
+    }
+  }, [isLoadingTasks, isLoadingStatus, watch('tasks_ids')]);
 
   const onSubmit = async ({ id, ...formData }) => {
     try {
@@ -58,6 +103,29 @@ export const AdminProjectsEditPage = () => {
       // TODO: tratar el error de guardado
     }
   };
+
+  const columns = [
+    {
+      title: 'Título',
+      dataIndex: 'title',
+      key: 'title',
+    },
+    {
+      title: 'Estimación (Horas)',
+      dataIndex: 'hours',
+      key: 'hours',
+    },
+    {
+      title: 'Empleados asignados',
+      dataIndex: 'employees_ids',
+      key: 'employees_ids',
+    },
+    {
+      title: 'Estado',
+      dataIndex: 'status',
+      key: 'status',
+    },
+  ];
 
   return (
     <div>
@@ -80,6 +148,18 @@ export const AdminProjectsEditPage = () => {
                 size="large"
               />
             </div>
+            <div>
+              <DatePicker
+                control={control}
+                id="deadline-date-id"
+                name="deadline"
+                label="Fecha de Deadline"
+                placeholder="Seleccione la fecha..."
+                rules={{ required: true }}
+                size="large"
+                format={(a) => formatDate(a)}
+              />
+            </div>
           </div>
         </div>
         <div>
@@ -93,6 +173,32 @@ export const AdminProjectsEditPage = () => {
             size="large"
           />
         </div>
+        <div>
+          <Select
+            control={control}
+            mode="multiple"
+            showSearch={false}
+            id="tasks-ids"
+            name="tasks_ids"
+            label="Tareas:"
+            size="large"
+            placeholder="Seleccionar tarea"
+            rules={{ required: true }}
+            className="w-full"
+            options={tasks.map((a) => ({ value: a.id, label: a.title }))}
+          />
+        </div>
+        {watch('tasks_ids')?.length > 0 && (
+          <div className="flex flex-col gap-4">
+            <Table
+              columns={columns}
+              dataSource={tableItems}
+              pagination={false}
+              className="border border-[#ddd] rounded-md bg-white"
+            />
+            <ProgressBar label="Progreso del proyecto" percent={progress} />
+          </div>
+        )}
         <div className="mt-4">
           <Button icon={<SaveOutlined />} htmlType="submit" size="large" type="primary" disabled={!isFormValid}>
             {params.id === 'new' ? 'Crear' : 'Guardar'}

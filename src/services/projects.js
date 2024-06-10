@@ -16,7 +16,7 @@ export const getProjects = async () => {
   throw new Error(data);
 };
 
-export const getProduct = async (id) => {
+export const getProject = async (id) => {
   const response = await fetch(`${ENV.API_URL}/${entity}/${id}`);
   const data = await response.json();
   if (response.ok) {
