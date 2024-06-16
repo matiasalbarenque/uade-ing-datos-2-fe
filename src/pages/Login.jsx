@@ -30,22 +30,7 @@ export const LoginPage = () => {
 
   const isFormValid = Object.keys(formState.errors).length === 0;
 
-  const onSubmit = async () => {
-    const userData = {
-      avatarUrl: '/avatars/avatar1.jpg',
-      email: 'jperez@gmail.com',
-      firstName: 'Juliana',
-      id: 1,
-      isLogged: true,
-      lastName: 'Perez',
-      role: 1,
-    };
-    localStorage.setItem('user', JSON.stringify(userData));
-    setUser(userData);
-    navigate('/admin');
-  };
-
-  const onSubmit2 = async (formData) => {
+  const onSubmit = async (formData) => {
     let accessToken = null;
     let userInfo = null;
     setHasLoginError(false);
@@ -69,13 +54,13 @@ export const LoginPage = () => {
     // Setea datos de sesión en el contexto Auth
     // para usarlo en distintas partes de la App
     const userData = {
-      avatarUrl: userInfo.avatar_img,
+      // avatarUrl: userInfo.avatar_img,
       email: userInfo.email,
       firstName: userInfo.firstname,
-      id: userInfo.id,
       isLogged: true,
       lastName: userInfo.lastname,
-      role: userInfo.role.name,
+      nickname: userInfo.nickname,
+      role: userInfo.roles_id,
     };
     localStorage.setItem('user', JSON.stringify(userData));
     setUser(userData);

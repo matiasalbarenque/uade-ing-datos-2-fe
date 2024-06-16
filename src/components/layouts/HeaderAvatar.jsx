@@ -26,7 +26,7 @@ export const UserAvatar = () => {
           dropdownRender={() => (
             <div className="min-w-[220px] p-2 flex flex-col gap-2 bg-white rounded-md shadow-lg">
               <div className="px-3 py-2 w-full flex flex-col bg-gray-50 border border-gray-200 rounded-md">
-                <span className="font-medium">{`${user.firstName} ${user.lastName}`}</span>
+                <span className="font-medium">{`${user.firstName} ${user.lastName} (${user.nickname})`}</span>
                 <span className="text-gray-400">{`${user.email}`}</span>
               </div>
               <div className="flex flex-col gap-2">
