@@ -6,10 +6,10 @@ const defaultValues = {
   avatarUrl: null,
   email: null,
   firstName: null,
-  id: null,
   isLogged: false,
   lastName: null,
-  role: null,
+  nickname: null,
+  roles_id: null,
 };
 
 export const AuthContext = createContext({
