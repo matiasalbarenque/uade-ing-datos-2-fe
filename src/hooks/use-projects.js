@@ -4,9 +4,12 @@ import { getProjects } from '@services/projects';
 const entity = 'projects';
 
 export const useGetProjects = () => {
-  return useQuery({
+  const query = useQuery({
     queryKey: [entity],
     queryFn: getProjects,
-    initialData: [],
   });
+  return {
+    ...query,
+    data: query.data || [],
+  }
 };

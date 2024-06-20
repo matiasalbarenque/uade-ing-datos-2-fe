@@ -8,7 +8,7 @@ import { formatDate } from '@assets/scripts';
 
 export const AdminProjectsListPage = () => {
   const navigate = useNavigate();
-  const { data: projects, refetch } = useGetProjects();
+  const { data: projects, isLoading, refetch } = useGetProjects();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const idSelected = useRef('');
 
@@ -43,16 +43,16 @@ export const AdminProjectsListPage = () => {
   const columns = [
     {
       title: 'Título',
-      dataIndex: 'title',
-      key: 'title',
+      dataIndex: 'description',
+      key: 'description',
       width: '40%',
       render: (value, { key }) => <Link to={`/admin/projects/${key}`}>{value}</Link>,
     },
     {
       title: 'Fecha de entrega',
-      dataIndex: 'deadline',
-      key: 'deadline',
-      render: (value, { key }) => formatDate(value),
+      dataIndex: 'due_date',
+      key: 'due_date',
+      render: (value) => formatDate(value),
     },
     {
       title: 'Acciones',
@@ -64,9 +64,9 @@ export const AdminProjectsListPage = () => {
   ];
 
   const tableItems = projects.map((a) => ({
-    key: a.id,
-    title: a.title,
-    deadline: a.deadline,
+    key: a.project_id,
+    description: a.description,
+    due_date: a.due_date,
     actions: (
       <div className="flex justify-center gap-2">
         <Button type="primary" size="middle" icon={<EditFilled />} onClick={() => handleEdit(a.id)} />
@@ -81,7 +81,12 @@ export const AdminProjectsListPage = () => {
       <Button type="primary" icon={<PlusOutlined />} size="large" className="mt-4" onClick={newHandler}>
         Nuevo
       </Button>
-      <Table columns={columns} dataSource={tableItems} className="mt-6 border border-[#ddd] rounded-md bg-white" />
+      <Table
+        columns={columns}
+        dataSource={tableItems}
+        loading={isLoading}
+        className="mt-6 border border-[#ddd] rounded-md bg-white"
+      />
       <Modal
         title="Confirmar eliminación"
         open={isModalOpen}

@@ -3,33 +3,36 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { Button, Table, Tag } from 'antd';
 import { EditOutlined, SaveOutlined } from '@ant-design/icons';
+import dayjs from 'dayjs';
 import { Input } from '@atoms/Input';
 import { Select } from '@atoms/Select';
 import { DatePicker } from '@atoms/DatePicker';
 import { TextArea } from '@atoms/Textarea';
 import { ProgressBar } from '@atoms/ProgressBar';
 import { getProject, postProject, putProject } from '@services/projects';
-import { useGetTasks } from '@hooks/use-tasks';
-import { useGetStatus } from '@hooks/use-status';
+import { useGetCandidatesTasks } from '@hooks/use-tasks';
+//import { useGetStatus } from '@hooks/use-status';
 import { formatDate } from '@assets/scripts/helpers';
 import { STATUS } from '@assets/constants';
 
 export const AdminProjectsEditPage = () => {
   const navigate = useNavigate();
   const params = useParams();
-  const { data: tasks, isLoading: isLoadingTasks } = useGetTasks();
-  const { data: statusList, isLoading: isLoadingStatus } = useGetStatus();
+  const { data: tasks, isLoading: isLoadingTasks } = useGetCandidatesTasks();
+  //const { data: statusList, isLoading: isLoadingStatus } = useGetStatus();
   const [tableItems, setTableItems] = useState([]);
   const [progress, setProgress] = useState(0);
+
+  const statusList = [];
+  const isLoadingStatus = false;
 
   const { control, formState, handleSubmit, reset, watch } = useForm({
     mode: 'onChange',
     defaultValues: {
-      id: null,
-      deadline: null,
+      project_id: null,
       title: '',
       description: '',
-      tasks_ids: [],
+      due_date: null,
     },
     shouldUnregister: true,
   });
@@ -44,15 +47,13 @@ export const AdminProjectsEditPage = () => {
 
   const getProjectData = async () => {
     try {
-      const data = await getProject(params.id);
+      const [data] = await getProject(params.id);
       if (data) {
         reset({
-          id: data.id,
-          number_devs: data.number_devs,
-          number_tasks: data.number_tasks,
+          project_id: data.project_id,
           title: data.title,
           description: data.description,
-          tasks_ids: data.tasks_ids,
+          due_date: dayjs(data.due_date),
         });
       }
     } catch {
@@ -152,7 +153,7 @@ export const AdminProjectsEditPage = () => {
               <DatePicker
                 control={control}
                 id="deadline-date-id"
-                name="deadline"
+                name="due_date"
                 label="Fecha de Deadline"
                 placeholder="Seleccione la fecha..."
                 rules={{ required: true }}
@@ -185,7 +186,7 @@ export const AdminProjectsEditPage = () => {
             placeholder="Seleccionar tarea"
             rules={{ required: true }}
             className="w-full"
-            options={tasks.map((a) => ({ value: a.id, label: a.title }))}
+            options={tasks.map((a) => ({ value: a.task_id, label: `${a.title} - ${a.duration} horas estimadas` }))}
           />
         </div>
         {watch('tasks_ids')?.length > 0 && (

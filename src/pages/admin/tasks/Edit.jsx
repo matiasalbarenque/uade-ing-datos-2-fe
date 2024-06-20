@@ -224,7 +224,7 @@ export const AdminTasksEditPage = () => {
               placeholder="Seleccionar habilidad"
               rules={{ required: true }}
               className="w-full"
-              options={skills.map((a) => ({ value: a.id, label: a.name }))}
+              options={skills.map((a) => ({ value: a.id, label: a.description }))}
             />
           </div>
           <div>
