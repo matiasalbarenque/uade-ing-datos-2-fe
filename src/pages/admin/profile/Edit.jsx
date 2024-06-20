@@ -2,7 +2,8 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { Button } from 'antd';
-import { SaveOutlined } from '@ant-design/icons';
+import { ClockCircleOutlined, SaveOutlined, } from '@ant-design/icons';
+import { Input } from '@atoms/Input';
 import { useAuth } from '@hooks/use-auth';
 import { useGetSkills } from '@hooks/use-skills';
 import { Select } from '@atoms/Select';
@@ -16,6 +17,7 @@ export const AdminProfileListPage = () => {
     mode: 'onChange',
     defaultValues: {
       skills_ids: null,
+      hours: 0,
     },
     shouldUnregister: true,
   });
@@ -56,7 +58,7 @@ export const AdminProfileListPage = () => {
   return (
     <div className="flex flex-col gap-4">
       <div className="px-4 flex gap-7">
-        <div className="flex-shrink-0 w-[320px]">
+        <div className="flex-shrink-0 w-[280px]">
           <div className="w-full rounded-full overflow-hidden border-8 border-white shadow-md object-cover">
             <img src={user.avatarUrl || '/avatars/no-avatar.jpg'} alt={`${user.firstName} ${user.lastName}`} className="w-full h-full" />
           </div>
@@ -89,7 +91,21 @@ export const AdminProfileListPage = () => {
                 placeholder="Seleccionar habilidades"
                 rules={{ required: true }}
                 className="w-full"
-                options={skills.map((a) => ({ value: a.id, label: a.name }))}
+                options={skills.map((a) => ({ value: a.id, label: a.description }))}
+              />
+            </div>
+            <div>
+              <Input
+                control={control}
+                id="hours-id"
+                name="hours"
+                label="Disponibilidad semanal (hs)"
+                placeholder="Horas"
+                prefix={<ClockCircleOutlined />}
+                rules={{ required: true }}
+                size="large"
+                type="number"
+                min={1}
               />
             </div>
           </div>

@@ -8,7 +8,7 @@ import { deleteTask } from '@services/tasks';
 export const AdminTasksListPage = () => {
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const { data: tasks, refetch } = useGetTasks();
+  const { data: tasks, isLoading, refetch } = useGetTasks();
   const idSelected = useRef('');
 
   const newHandler = () => {
@@ -44,12 +44,16 @@ export const AdminTasksListPage = () => {
       title: 'Título',
       dataIndex: 'title',
       key: 'title',
-      render: (value, { key }) => <Link to={`/admin/tasks/${key}`}>{value}</Link>,
     },
     {
       title: 'Estimación (Horas)',
-      dataIndex: 'hours',
-      key: 'hours',
+      dataIndex: 'duration',
+      key: 'duration',
+    },
+    {
+      title: 'Estado',
+      dataIndex: 'status',
+      key: 'status',
     },
     {
       title: 'Acciones',
@@ -61,13 +65,14 @@ export const AdminTasksListPage = () => {
   ];
 
   const tableItems = tasks.map((a) => ({
-    key: a.id,
+    key: a.task_id,
     title: a.title,
-    hours: a.hours,
+    duration: a.duration,
+    status: a.status,
     actions: (
       <div className="flex justify-center gap-2">
-        <Button type="primary" size="middle" icon={<EditFilled />} onClick={() => handleEdit(a.id)} />
-        <Button type="primary" size="middle" icon={<DeleteFilled />} danger onClick={() => handleDelete(a.id)} />
+        <Button type="primary" size="middle" icon={<EditFilled />} onClick={() => handleEdit(a.task_id)} />
+        <Button type="primary" size="middle" icon={<DeleteFilled />} danger onClick={() => handleDelete(a.task_id)} />
       </div>
     ),
   }));
@@ -78,7 +83,12 @@ export const AdminTasksListPage = () => {
       <Button type="primary" icon={<PlusOutlined />} size="large" className="mt-4" onClick={newHandler}>
         Nuevo
       </Button>
-      <Table columns={columns} dataSource={tableItems} className="mt-6 border border-[#ddd] rounded-md bg-white" />
+      <Table
+        columns={columns}
+        dataSource={tableItems}
+        loading={isLoading}
+        className="mt-6 border border-[#ddd] rounded-md bg-white"
+      />
       <Modal
         title="Confirmar eliminación"
         open={isModalOpen}
