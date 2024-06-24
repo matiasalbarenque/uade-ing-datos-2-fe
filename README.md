@@ -11,12 +11,6 @@ npm install
 
 ```
 
-## Iniciar server con datos mockup
-
-```bash
-npm run json-server
-```
-
 ## Iniciar server de desarrollo
 
 ```bash
