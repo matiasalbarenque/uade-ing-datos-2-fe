@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { SaveOutlined } from '@ant-design/icons';
 import { APP, ENV } from '@constants';
 import { useAuth } from '@hooks/use-auth';
@@ -8,8 +9,6 @@ import { Button } from 'antd';
 import Cookies from 'js-cookie';
 import { jwtDecode } from 'jwt-decode';
 import { ofetch } from 'ofetch';
-import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import useSWR from 'swr';
 import useSWRMutation from 'swr/mutation';
@@ -25,10 +24,15 @@ export const AdminProfileListPage = () => {
   const cookie = Cookies.get(APP.ACCESS_TOKEN_NAME);
   const { user_id } = jwtDecode(cookie);
 
-  const { isLoading } = useSWR(`${ENV.API_URL}/profiles/${user_id}`, (key) => ofetch(key, { params: { user_id } }), {
-    onSuccess([data] = []) {
-      setSelectedHours(data.availability);
-      setSelectedSkills(data.skills.map((s) => s.skill_id));
+  const { isLoading: isLoadingProfile } = useSWR(`${ENV.API_URL}/profiles/${user_id}`, ofetch, {
+    onSuccess([profile] = []) {
+      setSelectedHours(profile.availability);
+    },
+  });
+
+  const { isLoading: isLoadingSkills } = useSWR(`${ENV.API_URL}/profiles/${user_id}/skills`, ofetch, {
+    onSuccess(skills = []) {
+      setSelectedSkills(skills.map((s) => s.skill_id));
     },
   });
 
@@ -65,39 +69,6 @@ export const AdminProfileListPage = () => {
     },
   );
 
-  const { control, formState, handleSubmit, reset } = useForm({
-    mode: 'onChange',
-    defaultValues: {
-      skills_ids: null,
-      hours: 0,
-    },
-    shouldUnregister: true,
-  });
-
-  const isFormValid = Object.keys(formState.errors).length === 0;
-
-  useEffect(() => {
-    // getProfileData();
-  }, []);
-
-  const getProfileData = async () => {
-    try {
-      //const data = await getProduct();
-      const data = {};
-      if (data) {
-        reset({
-          id: data.id,
-          number_devs: data.number_devs,
-          number_tasks: data.number_tasks,
-          title: data.title,
-          description: data.description,
-        });
-      }
-    } catch {
-      // TODO: Tratar el error con una alerta
-    }
-  };
-
   return (
     <div className="flex flex-col gap-4">
       <div className="px-4 flex gap-7">
@@ -133,6 +104,7 @@ export const AdminProfileListPage = () => {
                 labelPlacement="outside"
                 name="skills_ids"
                 label="Habilidades"
+                disabled={isLoadingSkills}
                 placeholder="Selecciona las habilidades"
                 selectedKeys={selectedSkills}
                 onSelectionChange={(keys) => {
@@ -155,21 +127,9 @@ export const AdminProfileListPage = () => {
                 onChange={(e) => setSelectedHours(e.target.value)}
                 variant="bordered"
                 labelPlacement="outside"
-                disabled={isLoading}
+                disabled={isLoadingProfile}
                 required
               />
-              {/* <Input
-                control={control}
-                id="hours-id"
-                name="hours"
-                label="Disponibilidad semanal (hs)"
-                placeholder="Horas"
-                prefix={<ClockCircleOutlined />}
-                rules={{ required: true }}
-                size="large"
-                type="number"
-                min={1}
-              /> */}
             </div>
           </div>
         </div>
