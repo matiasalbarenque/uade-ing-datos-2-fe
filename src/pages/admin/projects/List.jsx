@@ -1,16 +1,37 @@
-import { useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Button, Modal, Table } from 'antd';
 import { DeleteFilled, EditFilled, PlusOutlined } from '@ant-design/icons';
+import { formatDate } from '@assets/scripts';
+import { ENV } from '@constants';
 import { useGetProjects } from '@hooks/use-projects';
 import { deleteProject } from '@services/projects';
-import { formatDate } from '@assets/scripts';
+import { Button, Modal, Table } from 'antd';
+import { ofetch } from 'ofetch';
+import { useRef, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import useSWRMutation from 'swr/mutation';
 
 export const AdminProjectsListPage = () => {
   const navigate = useNavigate();
   const { data: projects, isLoading, refetch } = useGetProjects();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const idSelected = useRef('');
+
+  const { trigger: remove } = useSWRMutation(
+    `${ENV.API_URL}/projects/`,
+    (key, { arg: id }) => {
+      if (!confirm('¿Está seguro de eliminar el proyecto?')) return;
+      ofetch(key + id, {
+        method: 'DELETE',
+        params: { project_id: id },
+      });
+    },
+    {
+      onSuccess: () => refetch(),
+      onError(e) {
+        console.error(e);
+        alert('Error al eliminar el proyecto');
+      },
+    },
+  );
 
   const newHandler = () => {
     navigate('/admin/projects/new');
@@ -43,10 +64,12 @@ export const AdminProjectsListPage = () => {
   const columns = [
     {
       title: 'Título',
-      dataIndex: 'description',
-      key: 'description',
+      dataIndex: 'title',
+      key: 'title',
       width: '40%',
-      render: (value, { key }) => <Link to={`/admin/projects/${key}`}>{value}</Link>,
+      render: (value, { key }) => {
+        return <Link to={`/admin/projects/${key}`}>{value}</Link>;
+      },
     },
     {
       title: 'Fecha de entrega',
@@ -63,17 +86,20 @@ export const AdminProjectsListPage = () => {
     },
   ];
 
-  const tableItems = projects.map((a) => ({
-    key: a.project_id,
-    description: a.description,
-    due_date: a.due_date,
-    actions: (
-      <div className="flex justify-center gap-2">
-        <Button type="primary" size="middle" icon={<EditFilled />} onClick={() => handleEdit(a.id)} />
-        <Button type="primary" size="middle" icon={<DeleteFilled />} danger onClick={() => handleDelete(a.id)} />
-      </div>
-    ),
-  }));
+  const tableItems = projects.map((a) => {
+    return {
+      key: a.project_id,
+      title: a.title,
+      description: a.description,
+      due_date: a.due_date,
+      actions: (
+        <div className="flex justify-center gap-2">
+          <Button type="primary" size="middle" icon={<EditFilled />} onClick={() => handleEdit(a.project_id)} />
+          <Button type="primary" size="middle" icon={<DeleteFilled />} danger onClick={() => remove(a.project_id)} />
+        </div>
+      ),
+    };
+  });
 
   return (
     <div>

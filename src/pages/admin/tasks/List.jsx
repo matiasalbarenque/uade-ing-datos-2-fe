@@ -1,15 +1,36 @@
-import { useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Button, Modal, Table } from 'antd';
 import { DeleteFilled, EditFilled, PlusOutlined } from '@ant-design/icons';
+import { ENV } from '@constants';
 import { useGetTasks } from '@hooks/use-tasks';
 import { deleteTask } from '@services/tasks';
+import { Button, Modal, Table } from 'antd';
+import { ofetch } from 'ofetch';
+import { useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import useSWRMutation from 'swr/mutation';
 
 export const AdminTasksListPage = () => {
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { data: tasks, isLoading, refetch } = useGetTasks();
   const idSelected = useRef('');
+
+  const { trigger: remove } = useSWRMutation(
+    `${ENV.API_URL}/tasks/`,
+    (key, { arg: id }) => {
+      if (!confirm('¿Está seguro de eliminar la tarea?')) return;
+      ofetch(key + id, {
+        method: 'DELETE',
+        params: { task_id: id },
+      });
+    },
+    {
+      onSuccess: () => refetch(),
+      onError(e) {
+        console.error(e);
+        alert('Error al eliminar la tarea');
+      },
+    },
+  );
 
   const newHandler = () => {
     navigate('/admin/tasks/new');
@@ -72,7 +93,7 @@ export const AdminTasksListPage = () => {
     actions: (
       <div className="flex justify-center gap-2">
         <Button type="primary" size="middle" icon={<EditFilled />} onClick={() => handleEdit(a.task_id)} />
-        <Button type="primary" size="middle" icon={<DeleteFilled />} danger onClick={() => handleDelete(a.task_id)} />
+        <Button type="primary" size="middle" icon={<DeleteFilled />} danger onClick={() => remove(a.task_id)} />
       </div>
     ),
   }));
