@@ -39,6 +39,7 @@ export const LoginPage = () => {
       const resp = await login(formData);
       accessToken = resp.access_token;
       userInfo = await getUserInfo(accessToken);
+      console.info('userInfo', userInfo);
     } catch {
       setHasLoginError(true);
       return;
@@ -50,6 +51,8 @@ export const LoginPage = () => {
     Cookies.set(APP.ACCESS_TOKEN_NAME, accessToken, {
       expires: new Date(tokenData.exp * 1000),
     });
+
+    console.info('tokenData', tokenData);
 
     // Setea datos de sesión en el contexto Auth
     // para usarlo en distintas partes de la App
